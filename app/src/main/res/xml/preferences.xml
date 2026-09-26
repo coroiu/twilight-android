@@ -476,6 +476,12 @@
             app:iconSpaceReserved="false" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="checkbox_virtual_guide_button"
+            android:summary="@string/summary_virtual_guide_button"
+            android:title="@string/title_virtual_guide_button"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="checkbox_ignore_synth_events"
             android:summary="@string/summary_ignore_synth_events"
             android:title="@string/title_checkbox_ignore_synth_events"

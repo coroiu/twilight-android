@@ -2238,6 +2238,33 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         }
     }
 
+    // Key remapping apps (e.g. Key Mapper) may re-send the guide button from a virtual
+    // device instead of the gamepad itself. Apply those presses to player 1.
+    public boolean handleVirtualGuideButton(KeyEvent event) {
+        if (stopped || !prefConfig.virtualGuideButton || event.getKeyCode() != KeyEvent.KEYCODE_BUTTON_MODE) {
+            return false;
+        }
+
+        InputDevice dev = event.getDevice();
+        if (dev != null && isGameControllerDevice(dev)) {
+            // Real gamepads go through the normal path
+            return false;
+        }
+
+        LimeLog.info("Virtual guide button " + (event.getAction() == KeyEvent.ACTION_DOWN ? "down" : "up") +
+                " from device " + event.getDeviceId());
+
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            defaultContext.inputMap |= ControllerPacket.SPECIAL_BUTTON_FLAG;
+        }
+        else {
+            defaultContext.inputMap &= ~ControllerPacket.SPECIAL_BUTTON_FLAG;
+        }
+
+        sendControllerInputPacket(defaultContext);
+        return true;
+    }
+
     public void handleRumbleTriggers(short controllerNumber, short leftTrigger, short rightTrigger) {
         if (stopped) {
             return;
