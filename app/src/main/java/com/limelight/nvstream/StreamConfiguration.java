@@ -28,6 +28,7 @@ public class StreamConfiguration {
     private int attachedGamepadMask;
     private int encryptionFlags;
     private int colorRange;
+    private boolean enableMicrophone;
     private int colorSpace;
     private boolean persistGamepadsAfterDisconnect;
     private boolean enableUltraLowLatency;
@@ -133,6 +134,11 @@ public class StreamConfiguration {
 
         public StreamConfiguration.Builder setColorRange(int colorRange) {
             config.colorRange = colorRange;
+            return this;
+        }
+
+        public StreamConfiguration.Builder setEnableMicrophone(boolean enableMicrophone) {
+            config.enableMicrophone = enableMicrophone;
             return this;
         }
 
@@ -249,6 +255,10 @@ public class StreamConfiguration {
 
     public int getColorRange() {
         return colorRange;
+    }
+
+    public boolean getEnableMicrophone() {
+        return enableMicrophone;
     }
 
     public int getColorSpace() {

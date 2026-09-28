@@ -348,7 +348,8 @@ public class MoonBridge {
                                               int clientRefreshRateX100,
                                               byte[] riAesKey, byte[] riAesIv,
                                               int videoCapabilities,
-                                              int colorSpace, int colorRange);
+                                              int colorSpace, int colorRange,
+                                              boolean enableMicrophone);
 
     public static native void stopConnection();
 
@@ -357,6 +358,15 @@ public class MoonBridge {
     public static native void sendExecServerCmd(int cmdId);
 
     public static native void sendEmptyPayload();
+
+    // True if the host accepted microphone passthrough for this session
+    public static native boolean isMicrophoneEnabled();
+
+    // Encodes 20 ms of 48 kHz mono PCM and sends it to the host
+    public static native int sendMicrophonePcm(short[] pcm);
+
+    // Frees the microphone encoder. Call once capture has stopped.
+    public static native void releaseMicrophoneEncoder();
 
     public static native void sendMouseMove(short deltaX, short deltaY);
 

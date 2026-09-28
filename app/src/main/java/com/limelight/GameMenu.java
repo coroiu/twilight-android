@@ -314,6 +314,12 @@ public class GameMenu implements Game.GameMenuCallbacks {
                     }
                 }));
 
+        if (game.isMicrophoneConfigured()) {
+            options.add(new MenuOption(getString(game.isMicrophoneMuted() ?
+                    R.string.game_menu_unmute_microphone : R.string.game_menu_mute_microphone), true,
+                    game::toggleMicrophoneMute));
+        }
+
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
                 game::toggleKeyboard));
 

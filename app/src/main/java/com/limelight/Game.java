@@ -10,6 +10,7 @@ import static com.limelight.utils.ServerHelper.getSecondaryDisplay;
 
 import com.limelight.binding.PlatformBinding;
 import com.limelight.binding.audio.AndroidAudioRenderer;
+import com.limelight.binding.audio.MicrophoneStream;
 import com.limelight.binding.input.ControllerHandler;
 import com.limelight.binding.input.GameInputDevice;
 import com.limelight.binding.input.KeyboardTranslator;
@@ -53,6 +54,7 @@ import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
@@ -108,7 +110,9 @@ import android.widget.Toast;
 import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import android.os.Looper;
@@ -189,6 +193,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     private boolean connecting = false;
     public boolean connected = false;
     private boolean autoEnterPip = false;
+
+    private static final int MICROPHONE_PERMISSION_REQUEST = 0x4d49;
+    private MicrophoneStream microphoneStream;
+    private boolean microphoneMuted = false;
     private boolean surfaceCreated = false;
     private boolean attemptedConnection = false;
     private int suppressPipRefCount = 0;
@@ -798,7 +806,14 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 .setColorSpace(decoderRenderer.getPreferredColorSpace())
                 .setColorRange(decoderRenderer.getPreferredColorRange())
                 .setPersistGamepadsAfterDisconnect(!prefConfig.multiController)
+                .setEnableMicrophone(prefConfig.enableMicrophone)
                 .build();
+
+        // Ask for the microphone now so the prompt is answered by the time the stream starts
+        if (prefConfig.enableMicrophone && !hasMicrophonePermission()) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO}, MICROPHONE_PERMISSION_REQUEST);
+        }
 
         // Initialize the connection
         conn = new NvConnection(getApplicationContext(),
@@ -3451,6 +3466,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             // during the process of stopping this one.
             new Thread() {
                 public void run() {
+                    stopMicrophone();
                     conn.stop();
                     if (httpConn != null && quitOnStop) {
                         try {
@@ -3699,6 +3715,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 if (prefConfig.preventPacketLoss) {
                     timerHandler.postDelayed(backgroundPing, 1000);
                 }
+
+                if (prefConfig.enableMicrophone && !MoonBridge.isMicrophoneEnabled()) {
+                    Toast.makeText(Game.this, R.string.toast_microphone_unsupported, Toast.LENGTH_LONG).show();
+                }
+                startMicrophoneIfReady();
             }
         });
 
@@ -3978,6 +3999,66 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     public void sendExecServerCmd(int cmdId) {
         conn.sendExecServerCmd(cmdId);
+    }
+
+    private boolean hasMicrophonePermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != MICROPHONE_PERMISSION_REQUEST) {
+            return;
+        }
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startMicrophoneIfReady();
+        } else {
+            Toast.makeText(this, R.string.toast_microphone_permission_denied, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private synchronized void startMicrophoneIfReady() {
+        if (!prefConfig.enableMicrophone || microphoneMuted || !connected ||
+                !MoonBridge.isMicrophoneEnabled() || !hasMicrophonePermission()) {
+            return;
+        }
+
+        if (microphoneStream == null) {
+            microphoneStream = new MicrophoneStream(getApplicationContext());
+        }
+        microphoneStream.start();
+    }
+
+    private synchronized void stopMicrophone() {
+        if (microphoneStream != null) {
+            microphoneStream.stop();
+        }
+    }
+
+    public boolean isMicrophoneConfigured() {
+        return prefConfig.enableMicrophone;
+    }
+
+    public boolean isMicrophoneMuted() {
+        return microphoneMuted;
+    }
+
+    public void toggleMicrophoneMute() {
+        if (!MoonBridge.isMicrophoneEnabled()) {
+            Toast.makeText(this, R.string.toast_microphone_unsupported, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Muting releases the microphone entirely, so the privacy indicator turns off too
+        microphoneMuted = !microphoneMuted;
+        if (microphoneMuted) {
+            stopMicrophone();
+        } else {
+            startMicrophoneIfReady();
+        }
     }
 
     public ArrayList<String> getServerCmds() {

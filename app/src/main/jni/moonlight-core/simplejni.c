@@ -6,6 +6,8 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+#include <opus.h>
+
 #include "minisdl.h"
 #include "controller_type.h"
 #include "controller_list.h"
@@ -24,6 +26,58 @@ Java_com_limelight_nvstream_jni_MoonBridge_sendExecServerCmd(JNIEnv *env, jclass
 JNIEXPORT void JNICALL
 Java_com_limelight_nvstream_jni_MoonBridge_sendEmptyPayload(JNIEnv *env, jclass clazz) {
     LiSendEmptyPayload();
+}
+
+// Microphone passthrough: 20 ms frames of 48 kHz mono audio
+#define MIC_SAMPLE_RATE 48000
+#define MIC_FRAME_SAMPLES 960
+#define MIC_BITRATE 32000
+
+// Only touched by the single microphone capture thread
+static OpusEncoder* micEncoder;
+
+JNIEXPORT jboolean JNICALL
+Java_com_limelight_nvstream_jni_MoonBridge_isMicrophoneEnabled(JNIEnv *env, jclass clazz) {
+    return LiIsMicrophoneEnabled();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_limelight_nvstream_jni_MoonBridge_sendMicrophonePcm(JNIEnv *env, jclass clazz, jshortArray pcm) {
+    unsigned char packet[LI_MIC_MAX_OPUS_PACKET_SIZE];
+    jshort samples[MIC_FRAME_SAMPLES];
+    int err;
+
+    if ((*env)->GetArrayLength(env, pcm) != MIC_FRAME_SAMPLES) {
+        return -1;
+    }
+
+    if (micEncoder == NULL) {
+        micEncoder = opus_encoder_create(MIC_SAMPLE_RATE, 1, OPUS_APPLICATION_VOIP, &err);
+        if (micEncoder == NULL) {
+            __android_log_print(ANDROID_LOG_ERROR, "moonlight-common-c", "Failed to create mic encoder: %d", err);
+            return -1;
+        }
+        opus_encoder_ctl(micEncoder, OPUS_SET_BITRATE(MIC_BITRATE));
+        opus_encoder_ctl(micEncoder, OPUS_SET_INBAND_FEC(1));
+        opus_encoder_ctl(micEncoder, OPUS_SET_PACKET_LOSS_PERC(5));
+    }
+
+    (*env)->GetShortArrayRegion(env, pcm, 0, MIC_FRAME_SAMPLES, samples);
+
+    int len = opus_encode(micEncoder, samples, MIC_FRAME_SAMPLES, packet, sizeof(packet));
+    if (len < 0) {
+        return len;
+    }
+
+    return LiSendMicrophoneOpusData(packet, len);
+}
+
+JNIEXPORT void JNICALL
+Java_com_limelight_nvstream_jni_MoonBridge_releaseMicrophoneEncoder(JNIEnv *env, jclass clazz) {
+    if (micEncoder != NULL) {
+        opus_encoder_destroy(micEncoder);
+        micEncoder = NULL;
+    }
 }
 
 JNIEXPORT void JNICALL
