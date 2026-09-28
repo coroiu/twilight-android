@@ -218,10 +218,10 @@
     <string name="summary_audio_config_list">Enable 5.1 or 7.1 surround sound for home-theater systems</string>
     <string name="title_checkbox_enable_audiofx">Enable system equalizer support</string>
     <string name="title_checkbox_enable_microphone">Stream microphone to host</string>
-    <string name="summary_checkbox_enable_microphone">Sends this device\'s microphone to the host PC as a virtual microphone. Uses the phone\'s own mic even when Bluetooth headphones are connected. Requires a Twilight-enabled Apollo host with the Microphone permission granted to this client.</string>
+    <string name="summary_checkbox_enable_microphone">Sends this device\'s microphone to the host PC as a virtual microphone. Uses the phone\'s own mic even when Bluetooth headphones are connected. Requires a Vesper host (Twilight\'s fork of Apollo) that grants this client the Microphone permission.</string>
     <string name="game_menu_mute_microphone">Mute Microphone</string>
     <string name="game_menu_unmute_microphone">Unmute Microphone</string>
-    <string name="toast_microphone_unsupported">The host did not accept the microphone. Check that it runs Twilight-enabled Apollo, has a virtual mic device, and grants this client the Microphone permission.</string>
+    <string name="toast_microphone_unsupported">The host did not accept the microphone. Check that it runs Vesper (Twilight\'s fork of Apollo), has a virtual mic device, and grants this client the Microphone permission.</string>
     <string name="toast_microphone_permission_denied">Microphone permission denied</string>
     <string name="summary_checkbox_enable_audiofx">Allows audio effects to function while streaming, but may increase audio latency</string>
 
