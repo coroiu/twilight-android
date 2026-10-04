@@ -187,7 +187,10 @@ public class BitrateCalibrationActivity extends AppCompatActivity {
         sb.append(step.verdict == BitrateCalibration.Verdict.CLEAN ? "✓ " : step.isFailure() ? "✗ " : "• ");
         sb.append(getString(R.string.calibration_step_title, step.requestedKbps / 1000, verdictLabel(step.verdict)));
         sb.append('\n');
-        sb.append(getString(R.string.calibration_step_details, s.getBitrateMbps(), s.avgTransferMs,
+        double receivedFps = s.elapsedMs > 0 ? s.frames * 1000.0 / s.elapsedMs : 0;
+        sb.append(getString(R.string.calibration_step_frames, receivedFps, session.fps, s.getBitrateMbps()));
+        sb.append('\n');
+        sb.append(getString(R.string.calibration_step_details, s.avgTransferMs,
                 s.worstWindowTransferMs, s.queuingDelayMs, s.getLossPercent()));
         sb.append('\n');
         if (s.keyframes > 0) {
@@ -231,9 +234,7 @@ public class BitrateCalibrationActivity extends AppCompatActivity {
             sb.append(getString(R.string.calibration_none));
         }
 
-        if (failure != null && failure.verdict == BitrateCalibration.Verdict.NO_DATA) {
-            sb.append("\n\n").append(getString(R.string.calibration_reason_no_data, failure.requestedKbps / 1000));
-        } else if (failure != null) {
+        if (failure != null) {
             sb.append("\n\n").append(getString(R.string.calibration_reason_failure,
                     failure.requestedKbps / 1000, verdictLabel(failure.verdict)));
         } else if (session.stoppedForLowLoad) {

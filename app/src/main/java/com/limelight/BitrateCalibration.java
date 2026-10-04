@@ -56,8 +56,12 @@ public class BitrateCalibration {
         }
 
         boolean isFailure() {
-            return verdict == Verdict.LOSS || verdict == Verdict.SLOW_TRANSFER ||
-                    verdict == Verdict.QUEUING || verdict == Verdict.NO_DATA;
+            return verdict == Verdict.LOSS || verdict == Verdict.SLOW_TRANSFER || verdict == Verdict.QUEUING;
+        }
+
+        // Steps that say nothing about the network because the stream had too little to send
+        boolean isInconclusive() {
+            return verdict == Verdict.UNDERLOADED || verdict == Verdict.NO_DATA;
         }
     }
 
@@ -121,7 +125,7 @@ public class BitrateCalibration {
             }
 
             int underloadedInARow = 0;
-            for (int i = steps.size() - 1; i >= 0 && steps.get(i).verdict == Verdict.UNDERLOADED; i--) {
+            for (int i = steps.size() - 1; i >= 0 && steps.get(i).isInconclusive(); i--) {
                 underloadedInARow++;
             }
             if (underloadedInARow >= MAX_UNDERLOADED_IN_A_ROW) {

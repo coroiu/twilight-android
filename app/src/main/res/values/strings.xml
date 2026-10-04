@@ -766,7 +766,8 @@
     <string name="calibration_next_step">Starting %1$d Mbps (step %2$d of %3$d)…</string>
     <string name="calibration_done">Calibration finished.</string>
     <string name="calibration_step_title">%1$d Mbps: %2$s</string>
-    <string name="calibration_step_details">   %1$.0f Mbps sent · transfer %2$.1f ms (worst %3$.1f) · queuing %4$.1f ms · loss %5$.1f%%</string>
+    <string name="calibration_step_frames">   %1$.0f of %2$.0f fps received · %3$.0f Mbps sent</string>
+    <string name="calibration_step_details">   transfer %1$.1f ms (worst %2$.1f) · queuing %3$.1f ms · loss %4$.1f%%</string>
     <string name="calibration_step_keyframes">   keyframes take %1$.1f ms</string>
     <string name="calibration_step_link">   link ~%1$.0f Mbps</string>
     <string name="calibration_verdict_clean">fine</string>
@@ -779,8 +780,7 @@
     <string name="calibration_none">No recommendation: no step used its full bitrate.</string>
     <string name="calibration_none_first_failed">No recommendation: even %1$d Mbps had problems. Move closer to the access point, use 5 GHz or 6 GHz, or lower the bitrate by hand.</string>
     <string name="calibration_reason_failure">Stopped at %1$d Mbps: %2$s.</string>
-    <string name="calibration_reason_no_data">Stopped at %1$d Mbps: too few frames arrived to measure. Keep the picture moving during calibration.</string>
-    <string name="calibration_reason_low_load">Stopped early: the stream didn\'t use the higher bitrates. Either the picture wasn\'t moving enough, or the host limits the bitrate (its max_bitrate setting).</string>
+    <string name="calibration_reason_low_load">Stopped early: the stream had too little to send. When the PC screen doesn\'t change, the host sends only a few frames per second at a low bitrate, and there is nothing to measure. Keep the picture moving (play, or run a video on the PC) and try again. If frames arrive at full rate but the bitrate stays low, the host limits it (its max_bitrate setting).</string>
     <string name="calibration_reason_interrupted">Stopped early: the stream ended before the measurement finished.</string>
     <string name="calibration_reason_all_clean">Every bitrate up to the maximum worked.</string>
 </resources>
