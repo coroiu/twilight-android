@@ -227,6 +227,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     private float lastAbsTouchDownX, lastAbsTouchDownY;
 
     private boolean quitOnStop = false;
+    // Non-zero while this stream is one step of a bitrate calibration
+    private int calibrationBitrateKbps;
     private boolean isHidingOverlays;
     private boolean floatingButtonShown;
     private boolean overlayToggleZoomButtonShown;
@@ -361,6 +363,15 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // Read the stream preferences
         prefConfig = PreferenceConfiguration.readPreferences(this);
         tombstonePrefs = Game.this.getSharedPreferences("DecoderTombstone", 0);
+
+        calibrationBitrateKbps = getIntent().getIntExtra(BitrateCalibration.EXTRA_STEP_BITRATE, 0);
+        if (calibrationBitrateKbps > 0) {
+            // Each step reconnects, so skip anything that would start or announce itself every time
+            prefConfig.bitrate = calibrationBitrateKbps;
+            prefConfig.meteredBitrate = calibrationBitrateKbps;
+            prefConfig.enableMicrophone = false;
+            prefConfig.enableLatencyToast = false;
+        }
 
         if (prefConfig.fullScreen) {
             // Full-screen
@@ -3720,6 +3731,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                     Toast.makeText(Game.this, R.string.toast_microphone_unsupported, Toast.LENGTH_LONG).show();
                 }
                 startMicrophoneIfReady();
+
+                if (calibrationBitrateKbps > 0) {
+                    runCalibrationStep();
+                }
             }
         });
 
@@ -4288,6 +4303,34 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     //切换触控灵敏度开关
     public void switchTouchSensitivity(){
         prefConfig.enableTouchSensitivity = !prefConfig.enableTouchSensitivity;
+    }
+
+    public boolean isCalibratingBitrate() {
+        return calibrationBitrateKbps > 0;
+    }
+
+    public void startBitrateCalibration() {
+        Intent intent = new Intent(this, BitrateCalibrationActivity.class);
+        intent.putExtra(BitrateCalibrationActivity.EXTRA_GAME_INTENT, getIntent());
+        startActivity(intent);
+        finish();
+    }
+
+    private void runCalibrationStep() {
+        Toast.makeText(this, getString(R.string.calibration_step_toast, calibrationBitrateKbps / 1000),
+                Toast.LENGTH_SHORT).show();
+
+        // The first seconds hold the opening keyframe and the encoder settling, so don't count them.
+        // connectionTerminated() clears timerHandler, so a dropped stream never reports a result.
+        timerHandler.postDelayed(() -> decoderRenderer.getFrameTransferStats().resetPeriod(),
+                BitrateCalibration.WARMUP_MS);
+        timerHandler.postDelayed(() -> {
+            if (connected) {
+                BitrateCalibration.reportStep(calibrationBitrateKbps,
+                        decoderRenderer.getFrameTransferStats().getPeriodSummary());
+            }
+            finish();
+        }, BitrateCalibration.WARMUP_MS + BitrateCalibration.MEASURE_MS);
     }
 
     public void disconnect() {

@@ -264,6 +264,9 @@ public class GameMenu implements Game.GameMenuCallbacks {
         }));
 
         options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true, game::switchTouchSensitivity));
+        if (!game.isCalibratingBitrate()) {
+            options.add(new MenuOption(getString(R.string.game_menu_calibrate_bitrate), game::startBitrateCalibration));
+        }
         if (device != null) {
             options.addAll(device.getGameMenuOptions());
         }

@@ -8,6 +8,7 @@ import android.view.Display;
 
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.profiles.ProfilesManager;
+import com.limelight.profiles.SettingsProfile;
 
 public class PreferenceConfiguration {
 
@@ -581,6 +582,25 @@ public class PreferenceConfiguration {
 
         // Use small mode on anything smaller than a 7" tablet
         return context.getResources().getConfiguration().smallestScreenWidthDp < 500;
+    }
+
+    /**
+     * Saves the streaming bitrate. If the active profile overrides it, the profile is updated
+     * instead, since that is the value streams actually use.
+     */
+    public static void saveBitrate(Context context, int bitrateKbps) {
+        ProfilesManager profiles = ProfilesManager.getInstance();
+        SettingsProfile active = profiles.getActive();
+        if (active != null && active.getOptions() != null && active.getOptions().containsKey(BITRATE_PREF_STRING)) {
+            active.getOptions().put(BITRATE_PREF_STRING, bitrateKbps);
+            active.setModifiedUtc(System.currentTimeMillis());
+            profiles.update(active);
+        }
+        else {
+            androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
+                    .putInt(BITRATE_PREF_STRING, bitrateKbps)
+                    .apply();
+        }
     }
 
     public static int getDefaultBitrate(Context context) {

@@ -177,6 +177,12 @@
             <meta-data android:name="WindowManagerPreference:FreeformWindowOrientation" android:value="landscape" />
         </activity>
         <activity
+            android:name=".BitrateCalibrationActivity"
+            android:resizeableActivity="true"
+            android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|screenSize|smallestScreenSize|layoutDirection"
+            android:excludeFromRecents="true"
+            android:label="@string/calibration_title" />
+        <activity
             android:name=".preferences.AddComputerManually"
             android:exported="true"
             android:resizeableActivity="true"

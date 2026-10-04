@@ -133,6 +133,8 @@
     <string name="perf_overlay_netdrops">Frames dropped by your network connection: %1$.2f%%</string>
     <string name="perf_overlay_netlatency">Average network latency: %1$d ms (variance: %2$d ms)</string>
     <string name="perf_overlay_dectime">Average decoding time: %1$.2f ms</string>
+    <string name="perf_overlay_frame_transfer">Frame transfer time: %1$.1f ms (queuing: %2$.1f ms)</string>
+    <string name="perf_overlay_link_throughput">Estimated link throughput: ~%1$d Mbps (stream uses %2$d%%)</string>
     <string name="perf_overlay_drawdelay"> Delay: %1$.2f ms</string>
 
     <!-- Performance Report Sharing -->
@@ -385,6 +387,7 @@
     <string name="game_menu_toggle_virtual_model">Toggle On-screen controller</string>
     <string name="game_menu_toggle_virtual_keyboard_model">Toggle On-screen full keyboard</string>
     <string name="game_menu_switch_touch_sensitivity_model">Switch touch sensitivity</string>
+    <string name="game_menu_calibrate_bitrate">Calibrate bitrate</string>
 
 
     <string name="game_menu_toggle_mouse_on">Enable Controller Mouse Emulation</string>
@@ -751,4 +754,33 @@
 
     <string name="title_checkbox_full_screen">Enable Full Screen</string>
     <string name="summary_checkbox_full_screen">Hide system bars with immersive mode</string>
+
+    <!-- Bitrate calibration -->
+    <string name="calibration_title">Bitrate calibration</string>
+    <string name="calibration_intro">Twilight will restart the stream at up to %1$d increasing bitrates, about 15 seconds each, and stop as soon as the network struggles.\n\nKeep the picture moving the whole time: play the game, or run a video on the PC. A still screen doesn\'t use the bitrate, so it can\'t be measured.\n\nRun this where you usually play.</string>
+    <string name="calibration_start">Start</string>
+    <string name="calibration_close">Close</string>
+    <string name="calibration_apply">Use %1$d Mbps</string>
+    <string name="calibration_applied">Bitrate set to %1$d Mbps</string>
+    <string name="calibration_step_toast">Calibrating at %1$d Mbps. Keep the picture moving.</string>
+    <string name="calibration_next_step">Starting %1$d Mbps (step %2$d of %3$d)…</string>
+    <string name="calibration_done">Calibration finished.</string>
+    <string name="calibration_step_title">%1$d Mbps: %2$s</string>
+    <string name="calibration_step_details">   %1$.0f Mbps sent · transfer %2$.1f ms (worst %3$.1f) · queuing %4$.1f ms · loss %5$.1f%%</string>
+    <string name="calibration_step_keyframes">   keyframes take %1$.1f ms</string>
+    <string name="calibration_step_link">   link ~%1$.0f Mbps</string>
+    <string name="calibration_verdict_clean">fine</string>
+    <string name="calibration_verdict_underloaded">bitrate not used</string>
+    <string name="calibration_verdict_no_data">too few frames</string>
+    <string name="calibration_verdict_loss">packet loss</string>
+    <string name="calibration_verdict_slow">frames arrive too slowly</string>
+    <string name="calibration_verdict_queuing">delay building up</string>
+    <string name="calibration_recommended">Recommended: %1$d Mbps. Each frame takes about %2$.1f ms to arrive at this bitrate.</string>
+    <string name="calibration_none">No recommendation: no step used its full bitrate.</string>
+    <string name="calibration_none_first_failed">No recommendation: even %1$d Mbps had problems. Move closer to the access point, use 5 GHz or 6 GHz, or lower the bitrate by hand.</string>
+    <string name="calibration_reason_failure">Stopped at %1$d Mbps: %2$s.</string>
+    <string name="calibration_reason_no_data">Stopped at %1$d Mbps: too few frames arrived to measure. Keep the picture moving during calibration.</string>
+    <string name="calibration_reason_low_load">Stopped early: the stream didn\'t use the higher bitrates. Either the picture wasn\'t moving enough, or the host limits the bitrate (its max_bitrate setting).</string>
+    <string name="calibration_reason_interrupted">Stopped early: the stream ended before the measurement finished.</string>
+    <string name="calibration_reason_all_clean">Every bitrate up to the maximum worked.</string>
 </resources>

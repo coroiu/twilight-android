@@ -172,6 +172,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private VideoStats activeWindowVideoStats;
     private VideoStats lastWindowVideoStats;
     private VideoStats globalVideoStats;
+    private final FrameTransferStats frameTransferStats = new FrameTransferStats();
 
     private long lastTimestampUs;
     private int lastFrameNumber;
@@ -1738,7 +1739,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     @Override
     public int submitDecodeUnit(byte[] decodeUnitData, int decodeUnitLength, int decodeUnitType,
                                 int frameNumber, int frameType, char frameHostProcessingLatency,
-                                long receiveTimeMs, long enqueueTimeMs) {
+                                long receiveTimeMs, long enqueueTimeMs, int presentationTimeMs) {
         if (stopping) {
             // Don't bother if we're stopping
             return MoonBridge.DR_OK;
@@ -1752,6 +1753,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             activeWindowVideoStats.framesLost += frameNumber - lastFrameNumber - 1;
             activeWindowVideoStats.totalFrames += frameNumber - lastFrameNumber - 1;
             activeWindowVideoStats.frameLossEvents++;
+            frameTransferStats.onFramesLost(frameNumber - lastFrameNumber - 1);
         }
 
         // Reset CSD data for each IDR frame
@@ -1861,6 +1863,16 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                     }
                     sb.append(context.getString(R.string.perf_overlay_netlatency,
                             (int)(rttInfo >> 32), (int)rttInfo)).append('\n');
+                    FrameTransferStats.Summary transfer = frameTransferStats.getLastWindowSummary();
+                    if (transfer != null && transfer.frames > 0) {
+                        sb.append(context.getString(R.string.perf_overlay_frame_transfer,
+                                transfer.avgTransferMs, transfer.queuingDelayMs)).append('\n');
+                        if (!Double.isNaN(transfer.throughputMbps)) {
+                            sb.append(context.getString(R.string.perf_overlay_link_throughput,
+                                    (int) transfer.throughputMbps,
+                                    (int) (100 * transfer.getBitrateMbps() / transfer.throughputMbps))).append('\n');
+                        }
+                    }
                     if (lastTwo.framesWithHostProcessingLatency > 0) {
                         sb.append(context.getString(R.string.perf_overlay_hostprocessinglatency,
                                 (float)lastTwo.minHostProcessingLatency / 10,
@@ -2110,6 +2122,11 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         activeWindowVideoStats.totalFramesReceived++;
         activeWindowVideoStats.totalFrames++;
 
+        if (decodeUnitType == MoonBridge.BUFFER_TYPE_PICDATA) {
+            frameTransferStats.onFrame(decodeUnitLength, frameType == MoonBridge.FRAME_TYPE_IDR,
+                    receiveTimeMs, enqueueTimeMs, presentationTimeMs, frameHostProcessingLatency);
+        }
+
         if (!FRAME_RENDER_TIME_ONLY) {
             // Count time from first packet received to enqueue time as receive time
             // We will count DU queue time as part of decoding, because it is directly
@@ -2227,6 +2244,10 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             return 0;
         }
         return (int)(globalVideoStats.totalTimeMs / globalVideoStats.totalFramesReceived);
+    }
+
+    public FrameTransferStats getFrameTransferStats() {
+        return frameTransferStats;
     }
 
     public int getAverageDecoderLatency() {
