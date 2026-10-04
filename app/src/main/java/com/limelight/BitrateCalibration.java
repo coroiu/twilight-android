@@ -6,6 +6,7 @@ import com.limelight.binding.video.FrameTransferStats;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Bitrate calibration: restarts the stream at increasing bitrates, measures each one and
@@ -119,6 +120,12 @@ public class BitrateCalibration {
                 step.verdict = Verdict.CLEAN;
             }
             steps.add(step);
+            LimeLog.info(String.format(Locale.US,
+                    "Bitrate calibration: %d kbps -> %s: %d frames (%d lost) in %d ms, %.1f Mbps, " +
+                            "transfer %.2f ms (worst window %.2f), keyframes %d at %.2f ms, queuing %.2f ms, link %.0f Mbps",
+                    step.requestedKbps, step.verdict, s.frames, s.framesLost, s.elapsedMs, s.getBitrateMbps(),
+                    s.avgTransferMs, s.worstWindowTransferMs, s.keyframes, s.avgKeyframeTransferMs,
+                    s.queuingDelayMs, s.throughputMbps));
 
             if (step.isFailure() || steps.size() >= plannedKbps.size()) {
                 return false;

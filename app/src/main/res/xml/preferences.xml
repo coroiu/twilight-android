@@ -1027,6 +1027,12 @@
             android:title="@string/title_debug_info"
             app:iconSpaceReserved="false" />
 
+        <Preference
+            android:key="pref_share_logs"
+            android:summary="@string/summary_share_logs"
+            android:title="@string/title_share_logs"
+            app:iconSpaceReserved="false" />
+
         <com.limelight.preferences.WebLauncherPreference
             url="https://github.com/coroiu/twilight-android/releases"
             android:key="option_software_release"

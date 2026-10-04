@@ -755,6 +755,10 @@
     <string name="title_checkbox_full_screen">Enable Full Screen</string>
     <string name="summary_checkbox_full_screen">Hide system bars with immersive mode</string>
 
+    <string name="title_share_logs">Share logs</string>
+    <string name="summary_share_logs">Send Twilight\'s recent logs (up to about 5 MB) to another app. They include host names and addresses.</string>
+    <string name="share_logs_empty">No logs recorded yet</string>
+
     <!-- Bitrate calibration -->
     <string name="calibration_title">Bitrate calibration</string>
     <string name="calibration_intro">Twilight will restart the stream at up to %1$d increasing bitrates, about 15 seconds each, and stop as soon as the network struggles.\n\nKeep the picture moving the whole time: play the game, or run a video on the PC. A still screen doesn\'t use the bitrate, so it can\'t be measured.\n\nRun this where you usually play.</string>

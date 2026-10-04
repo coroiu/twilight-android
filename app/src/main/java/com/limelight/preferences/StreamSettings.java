@@ -846,6 +846,16 @@ public class StreamSettings extends AppCompatActivity {
                 });
             }
 
+            _pref = findPreference("pref_share_logs");
+            if (_pref != null) {
+                _pref.setOnPreferenceClickListener(preference -> {
+                    if (!LogRecorder.share(requireActivity())) {
+                        Toast.makeText(requireActivity(), R.string.share_logs_empty, Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                });
+            }
+
             _pref = findPreference("pref_debug_info");
             if (_pref != null) {
                 _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
