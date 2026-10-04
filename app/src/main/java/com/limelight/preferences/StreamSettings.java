@@ -847,6 +847,14 @@ public class StreamSettings extends AppCompatActivity {
                 });
             }
 
+            _pref = findPreference(LogRecorder.PREF_KEY);
+            if (_pref != null) {
+                _pref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    LogRecorder.setEnabled(requireActivity().getApplicationContext(), (Boolean) newValue);
+                    return true;
+                });
+            }
+
             _pref = findPreference("pref_share_logs");
             if (_pref != null) {
                 _pref.setOnPreferenceClickListener(preference -> {

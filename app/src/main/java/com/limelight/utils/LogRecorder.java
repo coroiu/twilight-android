@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 
 import androidx.core.content.FileProvider;
+import androidx.preference.PreferenceManager;
 
 import com.limelight.BuildConfig;
 import com.limelight.LimeLog;
@@ -27,8 +28,11 @@ import java.util.Locale;
  * <p>
  * Apps may read their own log entries without any permission. A logcat child process writes
  * them to {@code files/logs}; Android kills it along with the app's process group.
+ * Recording is off unless the user turns it on in settings.
  */
 public class LogRecorder {
+    public static final String PREF_KEY = "checkbox_record_logs";
+
     private static final String LOG_DIR = "logs";
     private static final String LOG_FILE = "twilight.log";
     private static final int ROTATE_KB = 1024;
@@ -36,7 +40,30 @@ public class LogRecorder {
 
     private static Process logcat;
 
-    public static synchronized void start(Context context) {
+    /** Starts recording at app launch if the setting is on. */
+    public static void startIfEnabled(Context context) {
+        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PREF_KEY, false)) {
+            start(context);
+        }
+    }
+
+    /** Applies a change to the setting right away. Logs recorded so far stay available to share. */
+    public static void setEnabled(Context context, boolean enabled) {
+        if (enabled) {
+            start(context);
+        } else {
+            stop();
+        }
+    }
+
+    private static synchronized void stop() {
+        if (logcat != null) {
+            logcat.destroy();
+            logcat = null;
+        }
+    }
+
+    private static synchronized void start(Context context) {
         if (logcat != null) {
             return;
         }

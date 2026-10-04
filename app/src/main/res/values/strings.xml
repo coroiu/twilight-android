@@ -755,9 +755,11 @@
     <string name="title_checkbox_full_screen">Enable Full Screen</string>
     <string name="summary_checkbox_full_screen">Hide system bars with immersive mode</string>
 
+    <string name="title_record_logs">Record logs</string>
+    <string name="summary_record_logs">Save Twilight\'s logs so they can be shared without adb. Uses at most about 5 MB; older entries are dropped.</string>
     <string name="title_share_logs">Share logs</string>
     <string name="summary_share_logs">Send Twilight\'s recent logs (up to about 5 MB) to another app. They include host names and addresses.</string>
-    <string name="share_logs_empty">No logs recorded yet</string>
+    <string name="share_logs_empty">No logs recorded yet. Turn on Record logs, reproduce the problem, then share.</string>
 
     <!-- Bitrate calibration -->
     <string name="calibration_title">Bitrate calibration</string>
